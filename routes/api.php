@@ -17,11 +17,10 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::post('/v1/usertoken','App\Http\Controllers\UserapiController@index');
-Route::post('/v1/testcreate','App\Http\Controllers\UserapiController@create');
-
+Route::post('/v1/fast_GetToken','App\Http\Controllers\UserapiController@fast_GetToken');
+Route::post('/v1/usercreate','App\Http\Controllers\UserapiController@fastcreate');
 Route::middleware('auth:api')->group(function (){
-    Route::post('/v1/test','App\Http\Controllers\UserapiController@index');
-    Route::post('/v1/testin','App\Http\Controllers\Controller@test');
+
+    Route::post('/v1/test','App\Http\Controllers\TestController@index');
 
 });

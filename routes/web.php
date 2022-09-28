@@ -21,5 +21,6 @@ Route::get('/', function () {
 Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
+Route::middleware(['auth:sanctum','verified'])->get('/again_authorize',[AuthorizeController::class,'again_authorize']);
 Route::middleware(['auth:sanctum','verified'])->get('/authorize2',[AuthorizeController::class,'redirect']);
 Route::middleware(['auth:sanctum','verified'])->get('/authorize2/callback',[AuthorizeController::class,'callback']);
