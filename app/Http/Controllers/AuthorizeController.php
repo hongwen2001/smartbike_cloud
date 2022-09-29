@@ -18,7 +18,7 @@ class AuthorizeController extends ClientController
     public function redirect(Request $request)
     {
         $user = Auth::user();
-        return  $user;
+
         global $response;
 
         $request = $request->replace(['name' => Auth::user()->account, 'redirect' => 'http://172.18.8.158:8080/authorize2/callback']);
