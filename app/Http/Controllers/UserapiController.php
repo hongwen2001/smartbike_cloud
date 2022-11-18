@@ -5,13 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Dotenv\Exception\ValidationException;
 use App\Actions\Fortify\PasswordValidationRules;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Jetstream\Jetstream;
-use App\Http\Controllers\Oauth20CreatePersonTokenController;
+use App\Http\Controllers\Oauth20LoginController;
 use Laravel\Passport\Http\Controllers\ClientController;
 use Laravel\Passport\Http\Controllers\PersonalAccessTokenController;
 use mysql_xdevapi\Exception;
@@ -27,17 +29,7 @@ class UserapiController extends ClientController
     public function index(Request $request)
     {
         //
-        $login = array(
-            'account',
-            'email' => $request->email,
-            'password' => $request->password
-        );
-        if (Auth::attempt($login)) {
-            $token = Auth::user()->createToken('email')->accessToken;
-            return $token;
-        } else {
-            return '失敗';
-        }
+
     }
 
     /**
@@ -45,26 +37,33 @@ class UserapiController extends ClientController
      *
      * @return \Illuminate\Http\Response
      */
-    public function fastcreate(Request $request)
+    public function FB_Google_GetToken(Request $request){
+        $login = array(
+            'email' => $request->email,
+            'password' => $request->password
+        );
+        if (Auth::attempt($login)) {
+            $token = Auth::user()->createToken('email')->accessToken;
+
+            return $token;
+        } else {
+            return '失敗';
+        }
+    }
+
+    public function check_account(Request $request){
+        $vaildator=Validator::make($request->toArray(),['account'=>['required']]);
+        if ($vaildator->passes()){
+            $data=DB::table('users')->where('account','=',$request->account)->first();
+            return $data==null?response()->json(['status' => 0, 'message' => "account does not exist"]):response()->json(['status' => 0, 'message' => "account already exists"]);
+        }else{
+            return response()->json(['status' => 1, 'message' => "Missing or incorrect data"]);
+        }
+    }
+    public function usercreate(Request $request)
     {
         $input = $request->toArray();
-        //
-//        $request->validate([
-//            'account'=>['required'],
-//            'email'=>['required','email'],
-//            'name'=>['required','string'],
-//            'password'=>['required','string','max:10']
-//            ]);
-//
-//        $user_data=User::firstOrCreate([
-//            'account'=>$request->userid],
-//            ['email'=>$request->email,
-//            'name'=>$request->name,
-//            'password'=>Hash::make($request->password)]);
-//        if (!$user_data->wasRecentlyCreated){
-//            return response()->json(['status'=>'0','message'=>'帳號已存在']);
-//        }
-//        return response()->json(['status'=>'1','message'=>'創建成功']);
+
         $validator = Validator::make($input, [
             'login_method' => ['required'],
             'name' => ['required', 'string', 'max:255'],
@@ -74,25 +73,53 @@ class UserapiController extends ClientController
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ]);
         if ($validator->passes()) {
-            $user = DB::table('users')->where('account', 'like', $input['userid'])->first();
+            $user = DB::table('users')->where('account', 'like', $input['account'])->first();
             if ($user == null) {
                 $request->replace(['name' => $input['account'], 'scopes' => '']);
-//                $createtoken=new PersonalAccessTokenController($request);
-//                $createtoken->store($request);
-                return User::create([
-                    'login_method' => $input['login_method'],
+                //                $createtoken=new PersonalAccessTokenController($request);
+                //                $createtoken->store($request);
+                $CreateUser = User::create([
+                    'Login_method' => $input['login_method'],
                     'name' => $input['name'],
                     'email' => $input['email'],
-                    'account' => $input['userid'],
+                    'account' => $input['email'],
                     'password' => Hash::make($input['password']),
                 ]);
+                $this->create_usertable($CreateUser->id);
+
+                return response()->json(['status' => 0, 'message' => "create success","data"=>$CreateUser]);
             }
-            return response()->json(['statis' => 0, 'message' => "existed"]);
+            return response()->json(['status' => 0, 'message' => "existed"]);
+
         } else {
             return response()->json(['status' => 1, 'message' => $validator->messages()]);
         }
     }
+    public function create_usertable($user_id)
+    {
+        Schema::create('user_HeartRateBloodOxygen' . $user_id, function (Blueprint $table) {
+            $table->id();
+            $table->dateTime('DataTime');
+            $table->string('Calories');
+            $table->string('HeartRate');
+            $table->string('BloodOxygen');
 
+        });
+        Schema::create('user_Maphistore' . $user_id, function (Blueprint $table) {
+            $table->id();
+            $table->dateTime('DataTime');
+            $table->string('Location');
+        });
+        Schema::create('user_SmartBike_Personal' . $user_id, function (Blueprint $table) {
+            $table->id();
+            $table->string('height')->nullable();
+            $table->string('weight')->nullable();
+            $table->string('birthday')->nullable();
+            $table->string('gender')->nullable();
+            $table->string('nowLocationLat')->nullable();
+            $table->string('nowLocationLng')->nullable();
+        });
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -102,18 +129,6 @@ class UserapiController extends ClientController
      */
     public function store(Request $request)
     {
-        //
-        try {
-            $this->validate($request, [
-                $request->userId => "required|string"
-            ]);
-            $user = DB::table('user')->where('userId', '=', $request->userId);
-            $data = $request->del('userId');
-            $user->update($data);
-            return response()->json(['status' => 1, 'message' => $user]);
-        } catch (ValidationException $exception) {
-            return response()->json(['status' => 0, 'message' => '錯誤']);
-        }
     }
 
     /**
@@ -151,39 +166,13 @@ class UserapiController extends ClientController
         //
     }
 
-    public function fast_GetToken(Request $request)
-    {
-        $input = $request->toArray();
-        $validator = Validator::make($input, [
-            'login_method' => ['required'],
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255'],
-            'account' => ['required'],
-            'password' => ['required'],
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
-        ]);
-        if ($validator->passes()) {
-            try {
-                $user = DB::table('users')->where('account', 'like', 'a0968325695@gmail.com');
 
-                $user_modul = User::find($user->first()->id);
-                $token = $user_modul->createToken('account')->accessToken;
-                return response()->json(['status' => 0, 'message' => 'succeeded', 'accessTokent' => $token]);
 
-            } catch (Exception $exception) {
-                return response()->json(['status' => 1, 'message' => 'The data is error']);
-            }
-        } else {
-            return response()->json(['status' => 1, 'message' => $validator->getMessageBag()]);
-        }
-    }
-
-//    public function refresh_acc
+    //    public function refresh_acc
     /**
      * Remove the specified resource from storage.
      *
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-
 }

@@ -12,26 +12,31 @@ use Laravel\Passport\Http\Controllers\ClientController;
 use function Livewire\str;
 use function Symfony\Component\String\u;
 
+/*    隨著IP不同這裡需要更改
+ *
+ * */
+
 class AuthorizeController extends ClientController
 {
     //
     public function redirect(Request $request)
     {
         $user = Auth::user();
-
         global $response;
 
-        $request = $request->replace(['name' => Auth::user()->account, 'redirect' => 'http://140.131.3.97:8080/authorize2/callback']);
-        $sec = $this->store($request);
-        DB::table('users')->where('id', '=', $user->id)->update(['secret' => $sec->secret, 'client_id' => $sec->id]);
-        $response = http_build_query(['client_id' => $sec->id, 'redirect_uri' => 'http://140.131.3.97/authorize2/callback', 'response_type' => 'code', 'scope' => '', 'clients' => $sec]);
-        return redirect('http://140.131.3.97:8080/oauth/authorize?' . $response);
+        if ($user->secret == null) {
+            $request = $request->replace(['name' => Auth::user()->account, 'redirect' => 'http://172.18.26.70:8080/authorize2/callback']);
+            $sec = $this->store($request);
+            DB::table('users')->where('id', '=', $user->id)->update(['secret' => $sec->secret, 'client_id' => $sec->id]);
+            $response = http_build_query(['client_id' => $sec->id, 'redirect_uri' => 'http://172.18.26.70:8080/authorize2/callback', 'response_type' => 'code', 'scope' => '']);
+        } else {
+            $response = http_build_query(['client_id' => $user->client_id, 'redirect_uri' => 'http://172.18.26.70:8080/authorize2/callback', 'response_type' => 'code', 'scope' => '']);
+        }
+        return redirect('http://172.18.26.70:8080/oauth/authorize?' . $response);
+        //        $response=http_build_query(['client_id'=>'1','redirect_uri'=>'http://127.0.0.1:8080/authorize2/callback','response_type'=>'code','scope'=>'']);
 
 
-//        $response=http_build_query(['client_id'=>'1','redirect_uri'=>'http://127.0.0.1:8080/authorize2/callback','response_type'=>'code','scope'=>'']);
-
-
-//        return $sec;
+        //        return $sec;
     }
 
     public function again_Authorize(Request $request)
@@ -47,17 +52,15 @@ class AuthorizeController extends ClientController
     {
         $user = Auth::user();
         if ($request->has('code')) {
-            $user_data = DB::table('users')->where('id', '=', $user->id)->first();
-            return redirect()->to('/dashboard?code=' . $request->code);
+            return redirect()->to('/dashboard?code=' . $request->code . '&client_id=' . $user->client_id.'&secret='.$user->secret);
         }
         if ($request->has('error')) {
-            $user_data = DB::table('users')->where('id', '=', $user->id);
-            $client_id=$user_data->first()->client_id;
-            $this->destroy($request, str($client_id));
-            $user_data->update(['secret' => null, 'client_id' => null]);
-//            return $this->redirect()->to("/dashboard");
-            return "倒置";
-        }
 
+            $client_id = $user->client_id;
+            $this->destroy($request, str($client_id));
+            $user->update(['secret' => '', 'client_id' => '']);
+            //            return $this->redirect()->to("/dashboard");
+            return response()->json(['status' => 1, 'message' => "error"]);
+        }
     }
 }
