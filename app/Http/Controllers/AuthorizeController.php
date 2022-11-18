@@ -25,14 +25,14 @@ class AuthorizeController extends ClientController
         global $response;
 
         if ($user->secret == null) {
-            $request = $request->replace(['name' => Auth::user()->account, 'redirect' => 'http://172.18.26.70:8080/authorize2/callback']);
+            $request = $request->replace(['name' => Auth::user()->account, 'redirect' => 'http://192.168.143.112:8080/authorize2/callback']);
             $sec = $this->store($request);
             DB::table('users')->where('id', '=', $user->id)->update(['secret' => $sec->secret, 'client_id' => $sec->id]);
-            $response = http_build_query(['client_id' => $sec->id, 'redirect_uri' => 'http://172.18.26.70:8080/authorize2/callback', 'response_type' => 'code', 'scope' => '']);
+            $response = http_build_query(['client_id' => $sec->id, 'redirect_uri' => 'http://192.168.143.112:8080/authorize2/callback', 'response_type' => 'code', 'scope' => '']);
         } else {
-            $response = http_build_query(['client_id' => $user->client_id, 'redirect_uri' => 'http://172.18.26.70:8080/authorize2/callback', 'response_type' => 'code', 'scope' => '']);
+            $response = http_build_query(['client_id' => $user->client_id, 'redirect_uri' => 'http://192.168.143.112:8080/authorize2/callback', 'response_type' => 'code', 'scope' => '']);
         }
-        return redirect('http://172.18.26.70:8080/oauth/authorize?' . $response);
+        return redirect('http://192.168.143.112:8080/oauth/authorize?' . $response);
         //        $response=http_build_query(['client_id'=>'1','redirect_uri'=>'http://127.0.0.1:8080/authorize2/callback','response_type'=>'code','scope'=>'']);
 
 
@@ -52,7 +52,7 @@ class AuthorizeController extends ClientController
     {
         $user = Auth::user();
         if ($request->has('code')) {
-            return redirect()->to('/dashboard?code=' . $request->code . '&client_id=' . $user->client_id.'&secret='.$user->secret);
+            return redirect()->to('/dashboard?code=' . $request->code . '&client_id=' . $user->client_id.'&secret='.$user->secret.'&id='.$user->id);
         }
         if ($request->has('error')) {
 
