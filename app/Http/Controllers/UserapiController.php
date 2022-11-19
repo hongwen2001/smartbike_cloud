@@ -45,7 +45,7 @@ class UserapiController extends ClientController
         if (Auth::attempt($login)) {
             $token = Auth::user()->createToken('email')->accessToken;
 
-            return $token;
+            return response()->json(['status' => 0, 'message' => "success",'token'=>$token,'id'=>Auth::user()->id],);
         } else {
             return '失敗';
         }
@@ -73,9 +73,9 @@ class UserapiController extends ClientController
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ]);
         if ($validator->passes()) {
-            $user = DB::table('users')->where('account', 'like', $input['account'])->first();
+            $user = DB::table('users')->where('account', 'like', $input['account'])->get()->toArray();
             if ($user == null) {
-                $request->replace(['name' => $input['account'], 'scopes' => '']);
+                $request->replace(['name' => $input['name'], 'scopes' => '']);
                 //                $createtoken=new PersonalAccessTokenController($request);
                 //                $createtoken->store($request);
                 $CreateUser = User::create([
@@ -89,7 +89,7 @@ class UserapiController extends ClientController
 
                 return response()->json(['status' => 0, 'message' => "create success","data"=>$CreateUser]);
             }
-            return response()->json(['status' => 0, 'message' => "existed"]);
+            return response()->json(['status' => 0, 'message' => "existed","data"=>$user]);
 
         } else {
             return response()->json(['status' => 1, 'message' => $validator->messages()]);
