@@ -39,15 +39,14 @@ class UserapiController extends ClientController
      */
     public function FB_Google_GetToken(Request $request){
         $login = array(
-            'email' => $request->email,
+            'account' => $request->account,
             'password' => $request->password
         );
         if (Auth::attempt($login)) {
             $token = Auth::user()->createToken('email')->accessToken;
-
-            return response()->json(['status' => 0, 'message' => "success",'token'=>$token,'id'=>Auth::user()->id],);
+            return response()->json(['status' => 0, 'message' => 'success','token'=>$token,'id'=>Auth::user()->id]);
         } else {
-            return '失敗';
+            return '失敗'.$login;
         }
     }
 
@@ -82,7 +81,7 @@ class UserapiController extends ClientController
                     'Login_method' => $input['login_method'],
                     'name' => $input['name'],
                     'email' => $input['email'],
-                    'account' => $input['email'],
+                    'account' => $input['account'],
                     'password' => Hash::make($input['password']),
                 ]);
                 $this->create_usertable($CreateUser->id);
