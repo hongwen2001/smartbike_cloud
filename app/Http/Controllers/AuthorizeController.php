@@ -23,7 +23,6 @@ class AuthorizeController extends ClientController
     {
         $user = Auth::user();
         global $response;
-
         if ($user->secret == null) {
             $request = $request->replace(['name' => Auth::user()->account, 'redirect' => 'http://172.18.26.70:8080/authorize2/callback']);
             $sec = $this->store($request);
@@ -33,10 +32,7 @@ class AuthorizeController extends ClientController
             $response = http_build_query(['client_id' => $user->client_id, 'redirect_uri' => 'http://172.18.26.70:8080/authorize2/callback', 'response_type' => 'code', 'scope' => '']);
         }
         return redirect('http://172.18.26.70:8080/oauth/authorize?' . $response);
-        //        $response=http_build_query(['client_id'=>'1','redirect_uri'=>'http://127.0.0.1:8080/authorize2/callback','response_type'=>'code','scope'=>'']);
 
-
-        //        return $sec;
     }
 
     public function again_Authorize(Request $request)
