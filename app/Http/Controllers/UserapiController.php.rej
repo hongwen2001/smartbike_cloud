@@ -1,0 +1,9 @@
+diff a/app/Http/Controllers/UserapiController.php b/app/Http/Controllers/UserapiController.php	(rejected hunks)
+@@ -45,7 +45,6 @@
+         if (Auth::attempt($login)) {
+             $token = Auth::user()->createToken('email')->accessToken;
+ 
+-            return $token;
+             return response()->json(['status' => 0, 'message' => "success",'token'=>$token,'id'=>Auth::user()->id],);
+         } else {
+             return '失敗';
