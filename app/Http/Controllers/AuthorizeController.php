@@ -19,7 +19,7 @@ use function Symfony\Component\String\u;
 class AuthorizeController extends ClientController
 {
     //
-    public TEST
+    public TEST02
     public function redirect(Request $request)
     {
         $user = Auth::user();
