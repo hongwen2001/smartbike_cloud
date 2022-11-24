@@ -50,12 +50,12 @@ class SmartBikeController extends Controller
     public function save_Mapchange(Request $request){
         $validator=Validator::make($request->toArray(),['id'=>['required'],'Location'=>['required'],'DataTime'=>['required','date_format:Y-m-d H:i:s']]);
         if ($validator->passes()) {
-            $data=DB::table('user_Maphistore'.$request->id)->whereDate('DataTime','=',$request->DataTime)->first();
-            if ($data==null) {
+            $data=DB::table('user_Maphistore'.$request->id)->where('DataTime','=',$request->DataTime);
+            if ($data->get()->toArray()==null) {
                 $result=DB::table('user_Maphistore'.$request->id)->insert(['DataTime'=>$request->DataTime,'Location'=>$request->Location]);
             }else{
-                $s_MapLocation=$data->Location.'、'.$request->Location;
-                $result=DB::table('user_Maphistore'.$request->id)->update(['Location'=>$s_MapLocation]);
+                $s_MapLocation=$data->first()->Location.'、'.$request->Location;
+                $result=$data->update(['Location'=>$s_MapLocation]);
             }
             return $result==true?response()->json(['status' => 0, 'message' => "succeed"]):response()->json(['status' => 1, 'message' => "update data error"]);
         }else{
