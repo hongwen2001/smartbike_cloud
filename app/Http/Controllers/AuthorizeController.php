@@ -22,17 +22,18 @@ class AuthorizeController extends ClientController
 
     public function redirect(Request $request)
     {
+        $IP='http://172.18.26.70:8080';
         $user = Auth::user();
         global $response;
         if ($user->secret == null) {
-            $request = $request->replace(['name' => Auth::user()->account, 'redirect' => 'http://172.18.26.70:8080/authorize2/callback']);
+            $request = $request->replace(['name' => Auth::user()->account, 'redirect' => $IP.'/authorize2/callback']);
             $sec = $this->store($request);
             DB::table('users')->where('id', '=', $user->id)->update(['secret' => $sec->secret, 'client_id' => $sec->id]);
-            $response = http_build_query(['client_id' => $sec->id, 'redirect_uri' => 'http://172.18.26.70:8080/authorize2/callback', 'response_type' => 'code', 'scope' => '']);
+            $response = http_build_query(['client_id' => $sec->id, 'redirect_uri' => $IP.'/authorize2/callback', 'response_type' => 'code', 'scope' => '']);
         } else {
-            $response = http_build_query(['client_id' => $user->client_id, 'redirect_uri' => 'http://172.18.26.70:8080/authorize2/callback', 'response_type' => 'code', 'scope' => '']);
+            $response = http_build_query(['client_id' => $user->client_id, 'redirect_uri' => $IP.'/authorize2/callback', 'response_type' => 'code', 'scope' => '']);
         }
-        return redirect('http://172.18.26.70:8080/oauth/authorize?' . $response);
+        return redirect($IP.'/oauth/authorize?' . $response);
 
     }
 
