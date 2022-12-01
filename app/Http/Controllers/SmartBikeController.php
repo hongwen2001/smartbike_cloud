@@ -15,7 +15,7 @@ class SmartBikeController extends Controller
     public function save_HeartRateBloodOxygen(Request $request){
         $validator=Validator::make($request->toArray(),['id'=>['required'],'Calories'=>['required'],'HeartRate'=>['required'],'BloodOxygen'=>['required'],'DataTime'=>['required','date_format:Y-m-d H:i:s']]);
         if ($validator->passes()) {
-            $data=DB::table('user_HeartRateBloodOxygen'.$request->id)->whereDate('DataTime','=',$request->DataTime)->first();
+            $data=DB::table('user_HeartRateBloodOxygen'.$request->id)->where('DataTime','=',$request->DataTime)->first();
             if ($data==null){
                 $result=DB::insert('insert into user_HeartRateBloodOxygen' . $request->id . '(DataTime,Calories,HeartRate,BloodOxygen) values (?,?,?,?)'
                     , [ $request->DataTime, $request->Calories,$request->HeartRate,$request->BloodOxygen]);
@@ -48,14 +48,15 @@ class SmartBikeController extends Controller
         }
     }
     public function save_Mapchange(Request $request){
-        $validator=Validator::make($request->toArray(),['id'=>['required'],'Location'=>['required'],'DataTime'=>['required','date_format:Y-m-d H:i:s']]);
+        $validator=Validator::make($request->toArray(),['id'=>['required'],'Location'=>['required'],'BikeLocation'=>['required'],'DataTime'=>['required','date_format:Y-m-d H:i:s']]);
         if ($validator->passes()) {
             $data=DB::table('user_Maphistore'.$request->id)->where('DataTime','=',$request->DataTime);
             if ($data->get()->toArray()==null) {
-                $result=DB::table('user_Maphistore'.$request->id)->insert(['DataTime'=>$request->DataTime,'Location'=>$request->Location]);
+                $result=DB::table('user_Maphistore'.$request->id)->insert(['DataTime'=>$request->DataTime,'Location'=>$request->Location,'BikeLocation'=>$request->BikeLocation]);
             }else{
                 $s_MapLocation=$data->first()->Location.'、'.$request->Location;
-                $result=$data->update(['Location'=>$s_MapLocation]);
+                $s_MapBikeLocation=$data->first()->BikeLocation.'、'.$request->BikeLocation;
+                $result=$data->update(['Location'=>$s_MapLocation,'BikeLocation'=>$s_MapBikeLocation]);
             }
             return $result==true?response()->json(['status' => 0, 'message' => "succeed"]):response()->json(['status' => 1, 'message' => "update data error"]);
         }else{
@@ -111,5 +112,13 @@ class SmartBikeController extends Controller
             return response()->json(['status' => 1, 'message' => "Missing or incorrect data"]);
         }
     }
-
+    public function getData_quantity(Request $request){
+        $validator=Validator::make($request->toArray(),['id'=>['required'],'tableName'=>['required']]);
+        if ($validator->passes()){
+            $result=DB::table($request->tableName.$request->id)->count();
+            return response()->json(['status' => 0, 'message' => "success",'data'=>['quantity'=>$result]]);
+        }else{
+            return response()->json(['status' => 1, 'message' => "Missing or incorrect data"]);
+        }
+    }
 }

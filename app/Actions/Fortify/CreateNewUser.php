@@ -59,6 +59,8 @@ class CreateNewUser implements CreatesNewUsers
             $table->id();
             $table->dateTime('DataTime');
             $table->string('Location');
+            $table->string('BlikeLocation');
+
         });
         Schema::create('user_SmartBike_Personal' . $user_id, function (Blueprint $table) {
             $table->id();
