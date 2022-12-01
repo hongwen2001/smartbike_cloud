@@ -78,6 +78,7 @@ class SmartBikeController extends Controller
         }
     }
     public function save_PersonDataChange(Request $request){
+        return 0;
         $validator=Validator::make($request->toArray(),[
             'id'=>['required']
         ]);

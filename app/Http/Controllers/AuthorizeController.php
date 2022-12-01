@@ -22,7 +22,7 @@ class AuthorizeController extends ClientController
 
     public function redirect(Request $request)
     {
-        $IP='http://172.18.26.70:8080';
+        $IP='http://140.13.3.97:8080';
         $user = Auth::user();
         global $response;
         if ($user->secret == null) {
