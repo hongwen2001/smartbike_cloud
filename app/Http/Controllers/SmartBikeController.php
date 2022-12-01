@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use PhpParser\Node\Expr\Array_;
@@ -15,15 +16,16 @@ class SmartBikeController extends Controller
     public function save_HeartRateBloodOxygen(Request $request){
         $validator=Validator::make($request->toArray(),['id'=>['required'],'Calories'=>['required'],'HeartRate'=>['required'],'BloodOxygen'=>['required'],'DataTime'=>['required','date_format:Y-m-d H:i:s']]);
         if ($validator->passes()) {
-            $data=DB::table('user_HeartRateBloodOxygen'.$request->id)->where('DataTime','=',$request->DataTime)->first();
-            if ($data==null){
+            $data=DB::table('user_HeartRateBloodOxygen'.$request->id)->where('DataTime',$request->DataTime);
+            $getdata=$data->first();
+            if ($data->get()->toArray()==null){
                 $result=DB::insert('insert into user_HeartRateBloodOxygen' . $request->id . '(DataTime,Calories,HeartRate,BloodOxygen) values (?,?,?,?)'
                     , [ $request->DataTime, $request->Calories,$request->HeartRate,$request->BloodOxygen]);
             }else{
-                $s_Calories=$data->Calories.'、'.$request->Calories;
-                $s_HeartRate=$data->HeartRate.'、'.$request->HeartRate;
-                $s_BloodOxygen=$data->BloodOxygen.'、'.$request->BloodOxygen;
-                $result=DB::table('user_HeartRateBloodOxygen' . $request->id)->update(['Calories'=>$s_Calories,'HeartRate'=>$s_HeartRate,'BloodOxygen'=>$s_BloodOxygen]);
+                $s_Calories=$getdata->Calories.'、'.$request->Calories;
+                $s_HeartRate=$getdata->HeartRate.'、'.$request->HeartRate;
+                $s_BloodOxygen=$getdata->BloodOxygen.'、'.$request->BloodOxygen;
+                $result=$data->update(['Calories'=>$s_Calories,'HeartRate'=>$s_HeartRate,'BloodOxygen'=>$s_BloodOxygen]);
             }
             return $result==true?response()->json(['status' => 0, 'message' => "succeed"]):response()->json(['status' => 1, 'message' => "update data error"]);
         }else{
@@ -79,23 +81,24 @@ class SmartBikeController extends Controller
         }
     }
     public function save_PersonDataChange(Request $request){
-        return 0;
         $validator=Validator::make($request->toArray(),[
             'id'=>['required']
         ]);
+
         if ($validator->passes()) {
-            $data=DB::table('user_SmartBike_Personal' . $request->id)->first();
-            if ($data==null){
+            $data=DB::table('user_SmartBike_Personal' . $request->id)->where("id",1);
+            if ($data->get()->toArray()==null){
                 $result=DB::insert('insert into user_SmartBike_Personal' . $request->id . '(height,weight,birthday,gender,nowLocationLat,nowLocationLng) values (?,?,?,?,?,?)'
                     , [ $request->height, $request->weight,$request->birthday,$request->gender,$request->nowLocationLat,$request->nowLocationLng]);
+
             }else{
                 $update_data=$request->toArray();
                 unset($update_data['id']);
                 $new_data=array();
-                foreach ($update_data as $item){
-                    array_push($new_data,[key($item)=>$item]);
+                foreach ($update_data as $key =>$value){
+                    $new_data=Arr::prepend($new_data,$value,$key);
                 }
-                $result=DB::table('user_SmartBike_Personal' . $request->id)->first()->update($new_data);
+               $result=$data->update($new_data);
             }
             return $result==true?response()->json(['status' => 0, 'message' => "succeed"]):response()->json(['status' => 1, 'message' => "error"]);
 
