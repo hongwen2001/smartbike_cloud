@@ -93,6 +93,8 @@ class UserapiController extends ClientController
         } else {
             return response()->json(['status' => 1, 'message' => $validator->messages()]);
         }
+
+
     }
     public function create_usertable($user_id)
     {
@@ -108,6 +110,8 @@ class UserapiController extends ClientController
             $table->id();
             $table->dateTime('DataTime');
             $table->string('Location');
+            $table->string('BikeLocation');
+
         });
         Schema::create('user_SmartBike_Personal' . $user_id, function (Blueprint $table) {
             $table->id();

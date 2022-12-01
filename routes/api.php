@@ -28,6 +28,7 @@ Route::middleware('auth:api')->group(function (){
     Route::post('/v1/save_Mapchange','App\Http\Controllers\SmartBikeController@save_Mapchange');
     Route::post('/v1/save_PersonData','App\Http\Controllers\SmartBikeController@save_PersonDataChange');
     Route::post('/v1/get_PersonData','App\Http\Controllers\SmartBikeController@get_PersonData');
+    Route::post('/v1/getData_quantity','App\Http\Controllers\SmartBikeController@getData_quantity');
     Route::middleware('get_DataCheck')->group(function (){
         Route::post('/v1/get_HeartRateBloodOxygen','App\Http\Controllers\SmartBikeController@get_HeartRateBloodOxygen');
         Route::post('/v1/get_Maphistore','App\Http\Controllers\SmartBikeController@get_Maphistore');
