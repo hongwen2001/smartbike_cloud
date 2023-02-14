@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthorizeController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
 
@@ -18,8 +19,8 @@ use Illuminate\Support\Facades\Validator;
 Route::get('/', function () {
     return view('auth/login');
 });
-Route::get('/study_test/{id}',function ($id){
-    return $id;
+Route::get('/study_test/{id}',function (Request $request){
+    return $request->all;
 });
 Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
     return view('dashboard');
