@@ -15,7 +15,7 @@ class TestController extends Controller
     public function index(Request $request)
     {
         //
-        return '00000';
+        return ;
 
     }
 
@@ -49,6 +49,7 @@ class TestController extends Controller
     public function show($id)
     {
         //
+        return $id;
     }
 
     /**
