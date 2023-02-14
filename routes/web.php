@@ -19,7 +19,7 @@ Route::get('/', function () {
     return view('auth/login');
 });
 Route::get('/study_test/{id}',function ($id){
-    return id;
+    return $id;
 });
 Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
     return view('dashboard');
