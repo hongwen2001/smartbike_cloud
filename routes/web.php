@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Validator;
 Route::get('/', function () {
     return view('auth/login');
 });
-Route::get('/study_test/{id}',function (Request $request){
+Route::get('/study_test',function (Request $request){
     return $request->all;
 });
 Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
